@@ -169,3 +169,28 @@ const tdStyle = { border: "1px solid #2c3e50", padding: "8px", textAlign: "cente
 const summaryBox = { marginTop: "20px", padding: "15px", background: "#eee", borderRadius: "5px" };
 const sig = { borderTop: "1px solid #000", width: "180px", textAlign: "center", paddingTop: "5px", fontWeight: "bold" };
 const printBtn = { padding: "15px", background: "#27ae60", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" };
+
+// ── FIXED Calculation inside the Map ──────────────────────────
+{
+  subjects.map(sub => {
+    let subTotal = 0;
+    let subMaxTotal = 0; // Dynamic Max Marks calculate karne ke liye
+
+    SCHOOL_DATA.exams.forEach(ex => {
+      subTotal += Number(marks[sub]?.[ex.id] || 0);
+      subMaxTotal += ex.max; // Har exam ka max add karo
+    });
+
+    return (
+      <tr key={sub}>
+        <td style={{ ...tdStyle, fontWeight: "bold", textAlign: "left" }}>{sub}</td>
+        {SCHOOL_DATA.exams.map(ex => (
+          <td key={ex.id} style={tdStyle}>{marks[sub]?.[ex.id] || "-"}</td>
+        ))}
+        <td style={{ ...tdStyle, fontWeight: "bold" }}>{subTotal}</td>
+        {/* Ab ye har subject ke liye sahi grade nikalega */}
+        <td style={tdStyle}>{getGrade(subTotal, subMaxTotal)}</td>
+      </tr>
+    );
+  })
+}
