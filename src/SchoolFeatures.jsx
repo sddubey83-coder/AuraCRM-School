@@ -1,654 +1,442 @@
-/**
- * School OS — Timetable + Transport + Marketplace
- * 3 features ek file mein
- */
+// SchoolFeatures.jsx — 3 Feature Modules
+// 1. TimetableOptimizer — AI-powered class scheduling
+// 2. TransportApp — Bus route + student tracking
+// 3. ModularMarketplace — School store / book shop
 
-import { useState } from "react";
+import React, { useState } from 'react';
 
-// ═══════════════════════════════════════════════════════════
-// 1. AUTO TIMETABLE OPTIMIZER
-// ═══════════════════════════════════════════════════════════
-
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const PERIODS = ["8:00-8:45", "8:45-9:30", "9:30-10:15", "10:15-11:00", "11:15-12:00", "12:00-12:45", "1:30-2:15", "2:15-3:00"];
-
-const SUBJECTS = {
-    "Nursery": ["English", "Hindi", "Math", "Drawing", "PT", "Story Time"],
-    "LKG": ["English", "Hindi", "Math", "Drawing", "PT", "Rhymes"],
-    "UKG": ["English", "Hindi", "Math", "Drawing", "PT", "GK"],
-    "Class 1": ["Math", "English", "Hindi", "EVS", "Drawing", "PT"],
-    "Class 2": ["Math", "English", "Hindi", "EVS", "Drawing", "PT"],
-    "Class 3": ["Math", "English", "Hindi", "EVS", "Computer", "PT"],
-    "Class 4": ["Math", "English", "Hindi", "EVS", "Computer", "PT", "GK"],
-    "Class 5": ["Math", "English", "Hindi", "Science", "SST", "Computer", "PT"],
-    "Class 6": ["Math", "Science", "English", "Hindi", "SST", "Computer", "Art", "PT"],
-    "Class 7": ["Math", "Science", "English", "Hindi", "SST", "Computer", "Art", "PT"],
-    "Class 8": ["Math", "Science", "English", "Hindi", "SST", "Computer", "Sanskrit", "PT"],
-    "Class 9": ["Math", "Science", "English", "Hindi", "SST", "Computer", "Sanskrit", "PT"],
-    "Class 10": ["Math", "Science", "English", "Hindi", "SST", "Computer", "Sanskrit", "PT"],
-    "Class 11": ["Math", "Physics", "Chemistry", "English", "Computer", "PE"],
-    "Class 12": ["Math", "Physics", "Chemistry", "English", "Computer", "PE"],
-};
-const TEACHERS = [
-    { name: "Mrs. Verma", subjects: ["Math", "Computer"] },
-    { name: "Mr. Sharma", subjects: ["Science"] },
-    { name: "Ms. Patel", subjects: ["English"] },
-    { name: "Mrs. Gupta", subjects: ["Hindi", "Sanskrit"] },
-    { name: "Mr. Singh", subjects: ["SST"] },
-    { name: "Ms. Joshi", subjects: ["Art", "PT"] },
-];
-
-function generateTimetable(className) {
-    const subjects = SUBJECTS[className] || SUBJECTS["Class 6"];
-    const timetable = {};
-
-    DAYS.forEach(day => {
-        timetable[day] = {};
-        let subjectIndex = 0;
-        PERIODS.forEach(period => {
-            if (period === "11:00-11:15") {
-                timetable[day][period] = { subject: "BREAK", teacher: "", color: "#1f2d3d" };
-            } else if (period === "12:45-1:30") {
-                timetable[day][period] = { subject: "LUNCH", teacher: "", color: "#1f2d3d" };
-            } else {
-                const subject = subjects[subjectIndex % subjects.length];
-                const teacher = TEACHERS.find(t => t.subjects.includes(subject));
-                timetable[day][period] = {
-                    subject,
-                    teacher: teacher?.name || "TBD",
-                    color: getSubjectColor(subject)
-                };
-                subjectIndex++;
-            }
-        });
-    });
-    return timetable;
+// ─── SHARED HELPERS ───────────────────────────────────────────────────────────
+function Card({ children, style = {} }) {
+    return <div style={{ background: '#111827', borderRadius: 16, padding: 24, border: '1px solid #1f2d3d', ...style }}>{children}</div>;
 }
-const EXAM_SCHEDULE = {
-    "exam": [
-        { date: "2026-05-01", day: "Friday", subject: "Math", time: "9:00 AM - 12:00 PM" },
-        { date: "2026-05-03", day: "Sunday", subject: "Science", time: "9:00 AM - 12:00 PM" },
-        { date: "2026-05-05", day: "Tuesday", subject: "English", time: "9:00 AM - 12:00 PM" },
-        { date: "2026-05-07", day: "Thursday", subject: "Hindi", time: "9:00 AM - 12:00 PM" },
-        { date: "2026-05-09", day: "Saturday", subject: "SST", time: "9:00 AM - 12:00 PM" },
-        { date: "2026-05-12", day: "Tuesday", subject: "Computer", time: "9:00 AM - 12:00 PM" },
-        { date: "2026-05-14", day: "Thursday", subject: "Sanskrit", time: "9:00 AM - 12:00 PM" },
-    ],
-    "test": [
-        { date: "2026-05-02", day: "Saturday", subject: "Math", time: "10:00 AM - 11:00 AM" },
-        { date: "2026-05-04", day: "Monday", subject: "Science", time: "10:00 AM - 11:00 AM" },
-        { date: "2026-05-06", day: "Wednesday", subject: "English", time: "10:00 AM - 11:00 AM" },
-        { date: "2026-05-08", day: "Friday", subject: "Hindi", time: "10:00 AM - 11:00 AM" },
-        { date: "2026-05-11", day: "Monday", subject: "SST", time: "10:00 AM - 11:00 AM" },
-    ]
-};
+function Btn({ children, color = '#4e8ef7', small, outline, ...props }) {
+    return (
+        <button {...props} style={{
+            padding: small ? '7px 14px' : '10px 20px', borderRadius: 10,
+            border: outline ? `1px solid ${color}` : 'none',
+            background: outline ? 'transparent' : color,
+            color: outline ? color : '#fff',
+            fontWeight: 700, fontSize: small ? 12 : 13, cursor: 'pointer', ...props.style
+        }}>{children}</button>
+    );
+}
+function Badge({ children, color }) {
+    return <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: color + '22', color, letterSpacing: 1 }}>{children}</span>;
+}
 
-function getSubjectColor(subject) {
-    const colors = {
-        Math: "#7b2d8b", Science: "#1e6091", English: "#2d6a4f",
-        Hindi: "#e85d04", SST: "#854F0B", Computer: "#185FA5",
-        Sanskrit: "#c9184a", Art: "#d97706", PT: "#059669",
-        BREAK: "#1f2d3d", LUNCH: "#1f2d3d"
-    };
-    return colors[subject] || "#374151";
+// ═══════════════════════════════════════════════════════════════
+// 1. TIMETABLE OPTIMIZER
+// ═══════════════════════════════════════════════════════════════
+
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const PERIODS = ['8:00–9:00', '9:00–10:00', '10:00–11:00', '11:20–12:20', '12:20–1:20', '2:00–3:00'];
+const SUBJECTS = ['Math', 'Science', 'English', 'Hindi', 'SST', 'Computer', 'PE', 'Art'];
+const SUBJECT_COLORS = {
+    Math: '#4e8ef7', Science: '#00d97e', English: '#a78bfa', Hindi: '#f97316',
+    SST: '#f6c90e', Computer: '#f45b69', PE: '#00c4cc', Art: '#e879f9'
+};
+const TEACHERS = ['Mr. Sharma', 'Ms. Verma', 'Mr. Patel', 'Ms. Singh', 'Mr. Kumar', 'Ms. Joshi'];
+
+function generateTimetable() {
+    return DAYS.reduce((acc, day) => {
+        acc[day] = PERIODS.map(() => {
+            const sub = SUBJECTS[Math.floor(Math.random() * SUBJECTS.length)];
+            const teacher = TEACHERS[Math.floor(Math.random() * TEACHERS.length)];
+            return { subject: sub, teacher };
+        });
+        return acc;
+    }, {});
 }
 
 export function TimetableOptimizer() {
-    const [selectedClass, setSelectedClass] = useState("Class 8");
-    const [selectedDay, setSelectedDay] = useState("Monday");
-    const [timetable, setTimetable] = useState(null);
-    const [generating, setGenerating] = useState(false);
-    const [view, setView] = useState("day"); // day / week
-    const [timetableType, setTimetableType] = useState("regular");
-    const [examSchedule, setExamSchedule] = useState({
-        exam: [
-            { date: "2026-05-01", day: "Friday", subject: "Math", time: "9:00 AM - 12:00 PM" },
-            { date: "2026-05-03", day: "Sunday", subject: "Science", time: "9:00 AM - 12:00 PM" },
-            { date: "2026-05-05", day: "Tuesday", subject: "English", time: "9:00 AM - 12:00 PM" },
-        ],
-        test: [
-            { date: "2026-05-02", day: "Saturday", subject: "Math", time: "10:00 AM - 11:00 AM" },
-            { date: "2026-05-04", day: "Monday", subject: "Science", time: "10:00 AM - 11:00 AM" },
-        ]
-    });
+    const [selectedClass, setSelectedClass] = useState('10th');
+    const [timetable, setTimetable] = useState(generateTimetable);
+    const [optimizing, setOptimizing] = useState(false);
+    const [conflicts, setConflicts] = useState(2);
 
-    const [showAddExam, setShowAddExam] = useState(false);
-    const [newExam, setNewExam] = useState({ date: "", subject: "Math", time: "9:00 AM - 12:00 PM" });
-    const generate = async () => {
-        setGenerating(true);
-        await new Promise(r => setTimeout(r, 1500));
-        setTimetable(generateTimetable(selectedClass));
-        setGenerating(false);
+    const classes = ['8th', '9th', '10th', '11th', '12th'];
+
+    const optimize = () => {
+        setOptimizing(true);
+        setTimeout(() => {
+            setTimetable(generateTimetable());
+            setConflicts(0);
+            setOptimizing(false);
+        }, 2000);
     };
 
-    const classes = Object.keys(SUBJECTS);
-
     return (
-        <div style={{ color: "#fff", fontFamily: "inherit", marginTop: 24 }}>
-            <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 3 }}>
-                    AI Powered
-                </div>
-                <div style={{ fontSize: 18, fontWeight: 700 }}>Auto Timetable Optimizer</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {/* Header stats */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+                {[
+                    { icon: '📅', label: 'Classes', value: classes.length, color: '#4e8ef7' },
+                    { icon: '👩‍🏫', label: 'Teachers', value: TEACHERS.length, color: '#00d97e' },
+                    { icon: '⚠️', label: 'Conflicts', value: conflicts, color: conflicts > 0 ? '#f45b69' : '#00d97e' },
+                    { icon: '✅', label: 'AI Score', value: conflicts === 0 ? '100%' : '87%', color: '#a78bfa' },
+                ].map(s => (
+                    <Card key={s.label} style={{ textAlign: 'center', padding: '16px 12px' }}>
+                        <span style={{ fontSize: 22 }}>{s.icon}</span>
+                        <p style={{ margin: '6px 0 2px', fontSize: 10, color: '#6b7280', fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase' }}>{s.label}</p>
+                        <p style={{ margin: 0, fontSize: 24, fontWeight: 900, color: s.color }}>{s.value}</p>
+                    </Card>
+                ))}
             </div>
+
+            {/* Conflict warning */}
+            {conflicts > 0 && (
+                <Card style={{ borderLeft: '3px solid #f45b69', padding: '14px 20px' }}>
+                    <p style={{ margin: 0, fontSize: 13, color: '#d1d5db' }}>
+                        ⚠️ <strong style={{ color: '#f45b69' }}>{conflicts} scheduling conflict{conflicts > 1 ? 's' : ''}</strong> detected — Mr. Sharma assigned to 2 classes at the same time. Click <em>AI Optimize</em> to resolve.
+                    </p>
+                </Card>
+            )}
 
             {/* Controls */}
-            <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
-                <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{
-                    background: "rgba(255,255,255,0.05)", border: "0.5px solid rgba(255,255,255,0.12)",
-                    borderRadius: 8, padding: "8px 14px", color: "#fff", fontSize: 13
-                }}>
-                    {classes.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-
-                <div style={{ display: "flex", gap: 6 }}>
-                    {["day", "week"].map(v => (
-                        <button key={v} onClick={() => setView(v)} style={{
-                            background: view === v ? "rgba(123,45,139,0.3)" : "transparent",
-                            border: `0.5px solid ${view === v ? "#c084fc" : "rgba(255,255,255,0.1)"}`,
-                            color: view === v ? "#c084fc" : "rgba(255,255,255,0.4)",
-                            padding: "8px 16px", borderRadius: 8, fontSize: 12, cursor: "pointer"
-                        }}>{v === "day" ? "Day View" : "Week View"}</button>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 6 }}>
+                    {classes.map(c => (
+                        <button key={c} onClick={() => { setSelectedClass(c); setTimetable(generateTimetable()); }}
+                            style={{
+                                padding: '8px 14px', borderRadius: 10, border: 'none',
+                                background: selectedClass === c ? '#4e8ef7' : '#1f2d3d',
+                                color: selectedClass === c ? '#fff' : '#9ca3af',
+                                fontWeight: 700, fontSize: 12, cursor: 'pointer'
+                            }}>{c}</button>
                     ))}
                 </div>
-
-                <button onClick={generate} disabled={generating} style={{
-                    background: generating ? "rgba(123,45,139,0.2)" : "rgba(123,45,139,0.4)",
-                    border: "0.5px solid rgba(123,45,139,0.6)", color: "#c084fc",
-                    padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600,
-                    cursor: generating ? "not-allowed" : "pointer"
-                }}>
-                    {generating ? "Generating..." : "Generate Timetable"}
-                </button>
+                <Btn color={optimizing ? '#374151' : '#00d97e'} onClick={optimize} style={{ marginLeft: 'auto' }}>
+                    {optimizing ? '⏳ Optimizing...' : '🤖 AI Optimize'}
+                </Btn>
+                <Btn color="#4e8ef7" outline small>📄 Export PDF</Btn>
             </div>
 
-            <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
-                {["regular", "exam", "test"].map(type => (
-                    <button key={type} onClick={() => setTimetableType(type)} style={{
-                        background: timetableType === type ? "rgba(123,45,139,0.3)" : "transparent",
-                        border: `0.5px solid ${timetableType === type ? "#c084fc" : "rgba(255,255,255,0.1)"}`,
-                        color: timetableType === type ? "#c084fc" : "rgba(255,255,255,0.4)",
-                        padding: "6px 14px", borderRadius: 20, fontSize: 12, cursor: "pointer"
-                    }}>
-                        {type === "regular" ? "📅 Regular" : type === "exam" ? "📝 Exam" : "✏️ Test"}
-                    </button>
+            {/* Timetable grid */}
+            <Card style={{ padding: 0, overflow: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
+                    <thead>
+                        <tr style={{ background: '#0d1117' }}>
+                            <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 11, color: '#6b7280', fontWeight: 700, letterSpacing: 1, minWidth: 90 }}>PERIOD</th>
+                            {DAYS.map(d => (
+                                <th key={d} style={{ padding: '12px 14px', textAlign: 'center', fontSize: 11, color: '#6b7280', fontWeight: 700, letterSpacing: 1 }}>{d.toUpperCase()}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {PERIODS.map((period, pi) => (
+                            <tr key={pi} style={{ borderBottom: '1px solid #1f2d3d' }}>
+                                <td style={{ padding: '10px 14px', fontSize: 11, color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>{period}</td>
+                                {DAYS.map((day, di) => {
+                                    const slot = timetable[day]?.[pi];
+                                    const color = SUBJECT_COLORS[slot?.subject] || '#6b7280';
+                                    return (
+                                        <td key={di} style={{ padding: '8px 6px', textAlign: 'center' }}>
+                                            <div style={{
+                                                background: color + '18', border: `1px solid ${color}44`,
+                                                borderRadius: 8, padding: '6px 8px',
+                                            }}>
+                                                <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color }}>{slot?.subject}</p>
+                                                <p style={{ margin: 0, fontSize: 9, color: '#6b7280', marginTop: 2 }}>{slot?.teacher.split(' ')[1]}</p>
+                                            </div>
+                                        </td>
+                                    );
+                                })}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </Card>
+
+            {/* Legend */}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {SUBJECTS.map(s => (
+                    <span key={s} style={{
+                        padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700,
+                        background: SUBJECT_COLORS[s] + '22', color: SUBJECT_COLORS[s]
+                    }}>{s}</span>
                 ))}
             </div>
-
-            {/* Day selector */}
-            {timetable && view === "day" && (
-                <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
-                    {DAYS.map(day => (
-                        <button key={day} onClick={() => setSelectedDay(day)} style={{
-                            background: selectedDay === day ? "rgba(123,45,139,0.3)" : "transparent",
-                            border: `0.5px solid ${selectedDay === day ? "#c084fc" : "rgba(255,255,255,0.1)"}`,
-                            color: selectedDay === day ? "#c084fc" : "rgba(255,255,255,0.4)",
-                            padding: "6px 12px", borderRadius: 20, fontSize: 12, cursor: "pointer"
-                        }}>{day.slice(0, 3)}</button>
-                    ))}
-                </div>
-            )}
-
-            {(timetableType === "exam" || timetableType === "test") && (
-                <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>
-                            {timetableType === "exam" ? "📝 Final Exam" : "✏️ Unit Test"} — {selectedClass}
-                        </div>
-                        <div style={{ display: "flex", gap: 8 }}>
-                            <button onClick={() => setShowAddExam(!showAddExam)} style={{
-                                background: "rgba(52,211,153,0.15)", border: "0.5px solid rgba(52,211,153,0.3)",
-                                color: "#34d399", padding: "6px 14px", borderRadius: 8, fontSize: 12, cursor: "pointer"
-                            }}>+ Add</button>
-                            <button onClick={() => window.print()} style={{
-                                background: "rgba(96,165,250,0.15)", border: "0.5px solid rgba(96,165,250,0.3)",
-                                color: "#60a5fa", padding: "6px 14px", borderRadius: 8, fontSize: 12, cursor: "pointer"
-                            }}>📄 PDF</button>
-                        </div>
-                    </div>
-
-                    {showAddExam && (
-                        <div style={{ background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: 14, marginBottom: 14 }}>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 10 }}>
-                                <div>
-                                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 4 }}>Date</div>
-                                    <input type="date" value={newExam.date} onChange={e => setNewExam(n => ({ ...n, date: e.target.value }))} style={{
-                                        width: "100%", background: "rgba(255,255,255,0.05)", border: "0.5px solid rgba(255,255,255,0.1)",
-                                        borderRadius: 8, padding: "7px 10px", color: "#fff", fontSize: 12, boxSizing: "border-box"
-                                    }} />
-                                </div>
-                                <div>
-                                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 4 }}>Subject</div>
-                                    <select value={newExam.subject} onChange={e => setNewExam(n => ({ ...n, subject: e.target.value }))} style={{
-                                        width: "100%", background: "rgba(255,255,255,0.05)", border: "0.5px solid rgba(255,255,255,0.1)",
-                                        borderRadius: 8, padding: "7px 10px", color: "#fff", fontSize: 12
-                                    }}>
-                                        {(SUBJECTS[selectedClass] || []).map(s => <option key={s} value={s}>{s}</option>)}
-                                    </select>
-                                </div>
-                                <div>
-                                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 4 }}>Time</div>
-                                    <input value={newExam.time} onChange={e => setNewExam(n => ({ ...n, time: e.target.value }))} placeholder="9:00 AM - 12:00 PM" style={{
-                                        width: "100%", background: "rgba(255,255,255,0.05)", border: "0.5px solid rgba(255,255,255,0.1)",
-                                        borderRadius: 8, padding: "7px 10px", color: "#fff", fontSize: 12, boxSizing: "border-box"
-                                    }} />
-                                </div>
-                            </div>
-                            <button onClick={() => {
-                                if (!newExam.date || !newExam.subject) return;
-                                const dayName = new Date(newExam.date).toLocaleDateString("en-IN", { weekday: "long" });
-                                setExamSchedule(prev => ({
-                                    ...prev,
-                                    [timetableType]: [...prev[timetableType], { ...newExam, day: dayName }]
-                                }));
-                                setNewExam({ date: "", subject: "Math", time: "9:00 AM - 12:00 PM" });
-                                setShowAddExam(false);
-                            }} style={{
-                                background: "rgba(52,211,153,0.2)", border: "0.5px solid rgba(52,211,153,0.4)",
-                                color: "#34d399", padding: "8px 20px", borderRadius: 8, fontSize: 12, cursor: "pointer", fontWeight: 600
-                            }}>Save</button>
-                        </div>
-                    )}
-
-                    {examSchedule[timetableType]
-                        .sort((a, b) => new Date(a.date) - new Date(b.date))
-                        .map((exam, i) => {
-                            const subjectColor = getSubjectColor(exam.subject);
-                            return (
-                                <div key={i} style={{
-                                    display: "flex", alignItems: "center", gap: 14,
-                                    padding: "12px 16px", marginBottom: 8,
-                                    background: "rgba(255,255,255,0.03)",
-                                    border: "0.5px solid rgba(255,255,255,0.07)",
-                                    borderRadius: 10, borderLeft: `3px solid ${subjectColor}`
-                                }}>
-                                    <div style={{ minWidth: 100 }}>
-                                        <div style={{ fontSize: 13, fontWeight: 700, color: subjectColor }}>{exam.subject}</div>
-                                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{exam.day}</div>
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{exam.time}</div>
-                                    </div>
-                                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                        <div style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>
-                                            {new Date(exam.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
-                                        </div>
-                                        <button onClick={() => setExamSchedule(prev => ({
-                                            ...prev,
-                                            [timetableType]: prev[timetableType].filter((_, idx) => idx !== i)
-                                        }))} style={{
-                                            background: "transparent", border: "none", color: "rgba(244,114,182,0.5)",
-                                            cursor: "pointer", fontSize: 14
-                                        }}>🗑</button>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                </div>
-            )}
-
-            {!timetable && (
-                <div style={{ textAlign: "center", padding: 40, color: "rgba(255,255,255,0.3)", fontSize: 13 }}>
-                    Class select karo aur Generate karo — AI timetable banayega!
-                </div>
-            )}
-
-            {/* Day View */}
-            {timetable && view === "day" && (
-                <div>
-                    {PERIODS.map(period => {
-                        const slot = timetable[selectedDay][period];
-                        if (!slot) return null;
-                        const isBreak = slot.subject === "BREAK" || slot.subject === "LUNCH";
-                        return (
-                            <div key={period} style={{
-                                display: "flex", alignItems: "center", gap: 14,
-                                padding: "10px 14px", marginBottom: 6,
-                                background: isBreak ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.03)",
-                                border: "0.5px solid rgba(255,255,255,0.07)",
-                                borderRadius: 10, borderLeft: `3px solid ${slot.color}`
-                            }}>
-                                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", minWidth: 80 }}>{period}</div>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: 13, fontWeight: isBreak ? 400 : 600, color: isBreak ? "rgba(255,255,255,0.3)" : "#fff" }}>
-                                        {slot.subject}
-                                    </div>
-                                    {!isBreak && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>{slot.teacher}</div>}
-                                </div>
-                                {!isBreak && (
-                                    <div style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, background: `${slot.color}22`, color: slot.color }}>
-                                        {slot.subject}
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-
-            {/* Week View */}
-            {timetable && view === "week" && (
-                <div style={{ overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 600 }}>
-                        <thead>
-                            <tr>
-                                <th style={{ padding: "10px", textAlign: "left", fontSize: 11, color: "rgba(255,255,255,0.4)", borderBottom: "0.5px solid rgba(255,255,255,0.08)" }}>Period</th>
-                                {DAYS.map(d => (
-                                    <th key={d} style={{ padding: "10px", textAlign: "center", fontSize: 11, color: "rgba(255,255,255,0.4)", borderBottom: "0.5px solid rgba(255,255,255,0.08)" }}>
-                                        {d.slice(0, 3)}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {PERIODS.map(period => (
-                                <tr key={period}>
-                                    <td style={{ padding: "8px 10px", fontSize: 11, color: "rgba(255,255,255,0.35)", borderBottom: "0.5px solid rgba(255,255,255,0.05)", whiteSpace: "nowrap" }}>{period}</td>
-                                    {DAYS.map(day => {
-                                        const slot = timetable[day][period];
-                                        if (!slot) return <td key={day} />;
-                                        const isBreak = slot.subject === "BREAK" || slot.subject === "LUNCH";
-                                        return (
-                                            <td key={day} style={{ padding: "6px 8px", textAlign: "center", borderBottom: "0.5px solid rgba(255,255,255,0.05)" }}>
-                                                <div style={{
-                                                    fontSize: 11, fontWeight: 500,
-                                                    color: isBreak ? "rgba(255,255,255,0.2)" : slot.color,
-                                                    background: isBreak ? "transparent" : `${slot.color}15`,
-                                                    borderRadius: 6, padding: "4px 6px"
-                                                }}>
-                                                    {slot.subject}
-                                                </div>
-                                            </td>
-                                        );
-                                    })}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
         </div>
     );
 }
 
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // 2. TRANSPORT APP
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 
-const BUSES = [
-    { id: "BUS01", route: "Vijay Nagar → School", driver: "Ramesh Yadav", phone: "9109201111", capacity: 40, students: 35, status: "On Route", eta: "8 min", stops: ["Vijay Nagar", "Scheme 54", "Palasia", "School"] },
-    { id: "BUS02", route: "Scheme 78 → School", driver: "Suresh Patel", phone: "9109202222", capacity: 35, students: 28, status: "At Stop", eta: "15 min", stops: ["Scheme 78", "Kanadia Road", "Rajiv Gandhi Square", "School"] },
-    { id: "BUS03", route: "Bhawarkuan → School", driver: "Mahesh Singh", phone: "9109203333", capacity: 45, students: 42, status: "Departed", eta: "22 min", stops: ["Bhawarkuan", "LIG Square", "Nehru Park", "School"] },
-    { id: "BUS04", route: "Manglia → School", driver: "Dinesh Kumar", phone: "9109204444", capacity: 50, students: 38, status: "On Route", eta: "35 min", stops: ["Manglia", "Ring Road", "Bypass", "School"] },
+const BUS_ROUTES = [
+    { id: 'R1', name: 'Route 1 — Vijay Nagar', driver: 'Ramesh Kumar', phone: '9876543210', seats: 40, students: 34, status: 'On Route', eta: '7 min', stops: ['Vijay Nagar Square', 'Palasia Chowk', 'LIG Square', 'School'] },
+    { id: 'R2', name: 'Route 2 — Scheme 54', driver: 'Suresh Yadav', phone: '9765432109', seats: 35, students: 28, status: 'At School', eta: 'Arrived', stops: ['Scheme 54 Main', 'Bicholi Mardana', 'Rau Road', 'School'] },
+    { id: 'R3', name: 'Route 3 — Indore West', driver: 'Mahesh Patel', phone: '9654321098', seats: 45, students: 41, status: 'On Route', eta: '15 min', stops: ['Rajendra Nagar', 'Banganga', 'Old Palasia', 'School'] },
+    { id: 'R4', name: 'Route 4 — Ujjain Road', driver: 'Prakash Sharma', phone: '9543210987', seats: 50, students: 38, status: 'Delayed', eta: '25 min', stops: ['Dewas Road', 'Ring Road', 'Bypass', 'School'] },
 ];
+
+const STATUS_COLOR = { 'On Route': '#4e8ef7', 'At School': '#00d97e', 'Delayed': '#f45b69' };
 
 export function TransportApp() {
-    const [selectedBus, setSelectedBus] = useState(null);
-    const [view, setView] = useState("live");
+    const [selected, setSelected] = useState(null);
+    const [filter, setFilter] = useState('all');
 
-    const statusColor = (status) => {
-        if (status === "On Route") return "#34d399";
-        if (status === "At Stop") return "#fbbf24";
-        if (status === "Departed") return "#60a5fa";
-        return "#f472b6";
-    };
+    const routes = filter === 'all' ? BUS_ROUTES : BUS_ROUTES.filter(r => r.status === filter);
 
     return (
-        <div style={{ color: "#fff", fontFamily: "inherit", marginTop: 24 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                <div>
-                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 3 }}>
-                        Live Tracking
-                    </div>
-                    <div style={{ fontSize: 18, fontWeight: 700 }}>Transport Management</div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#34d399", animation: "pulse 2s infinite" }} />
-                    <span style={{ fontSize: 11, color: "#34d399", fontWeight: 600 }}>LIVE</span>
-                </div>
-            </div>
-
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* Stats */}
-            <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
                 {[
-                    { label: "Total Buses", value: BUSES.length, color: "#60a5fa" },
-                    { label: "On Route", value: BUSES.filter(b => b.status === "On Route").length, color: "#34d399" },
-                    { label: "Total Students", value: BUSES.reduce((s, b) => s + b.students, 0), color: "#c084fc" },
-                    { label: "Avg ETA", value: "20 min", color: "#fbbf24" },
+                    { icon: '🚌', label: 'Total Buses', value: BUS_ROUTES.length, color: '#4e8ef7' },
+                    { icon: '👦', label: 'Students Enrolled', value: BUS_ROUTES.reduce((s, r) => s + r.students, 0), color: '#00d97e' },
+                    { icon: '🟢', label: 'On Route', value: BUS_ROUTES.filter(r => r.status === 'On Route').length, color: '#f97316' },
+                    { icon: '⚠️', label: 'Delayed', value: BUS_ROUTES.filter(r => r.status === 'Delayed').length, color: '#f45b69' },
                 ].map(s => (
-                    <div key={s.label} style={{ flex: 1, background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "12px", textAlign: "center" }}>
-                        <div style={{ fontSize: 22, fontWeight: 700, color: s.color }}>{s.value}</div>
-                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>{s.label}</div>
-                    </div>
+                    <Card key={s.label} style={{ padding: '16px 18px' }}>
+                        <span style={{ fontSize: 22 }}>{s.icon}</span>
+                        <p style={{ margin: '6px 0 2px', fontSize: 10, color: '#6b7280', fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase' }}>{s.label}</p>
+                        <p style={{ margin: 0, fontSize: 26, fontWeight: 900, color: s.color }}>{s.value}</p>
+                    </Card>
                 ))}
             </div>
 
-            {/* Tabs */}
-            <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
-                {["live", "routes", "drivers"].map(v => (
-                    <button key={v} onClick={() => setView(v)} style={{
-                        background: view === v ? "rgba(230,93,4,0.2)" : "transparent",
-                        border: `0.5px solid ${view === v ? "#e85d04" : "rgba(255,255,255,0.1)"}`,
-                        color: view === v ? "#e85d04" : "rgba(255,255,255,0.4)",
-                        padding: "7px 16px", borderRadius: 8, fontSize: 12, cursor: "pointer", fontWeight: view === v ? 600 : 400
-                    }}>{v === "live" ? "Live Tracking" : v === "routes" ? "Routes" : "Drivers"}</button>
+            {/* Filter */}
+            <div style={{ display: 'flex', gap: 8 }}>
+                {['all', 'On Route', 'At School', 'Delayed'].map(f => (
+                    <button key={f} onClick={() => setFilter(f)} style={{
+                        padding: '7px 16px', borderRadius: 10, border: 'none',
+                        background: filter === f ? STATUS_COLOR[f] || '#4e8ef7' : '#1f2d3d',
+                        color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer'
+                    }}>{f === 'all' ? 'All Routes' : f}</button>
                 ))}
             </div>
 
-            {/* Live View */}
-            {view === "live" && (
-                <div>
-                    {BUSES.map(bus => (
-                        <div key={bus.id} onClick={() => setSelectedBus(selectedBus?.id === bus.id ? null : bus)} style={{
-                            background: "rgba(255,255,255,0.03)", border: `0.5px solid ${selectedBus?.id === bus.id ? "#e85d04" : "rgba(255,255,255,0.07)"}`,
-                            borderRadius: 12, padding: "14px 16px", marginBottom: 10, cursor: "pointer"
-                        }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: selectedBus?.id === bus.id ? 12 : 0 }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                                    <div style={{ fontSize: 24 }}>🚌</div>
-                                    <div>
-                                        <div style={{ fontSize: 13, fontWeight: 600 }}>{bus.id} — {bus.route}</div>
-                                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>{bus.driver} · {bus.students}/{bus.capacity} students</div>
-                                    </div>
-                                </div>
-                                <div style={{ textAlign: "right" }}>
-                                    <div style={{ fontSize: 11, fontWeight: 600, color: statusColor(bus.status), padding: "3px 10px", background: `${statusColor(bus.status)}22`, borderRadius: 20 }}>
-                                        {bus.status}
-                                    </div>
-                                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>ETA: {bus.eta}</div>
-                                </div>
+            {/* Route cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+                {routes.map(route => (
+                    <Card key={route.id} style={{ cursor: 'pointer', border: selected?.id === route.id ? '1px solid #4e8ef7' : '1px solid #1f2d3d' }}
+                        onClick={() => setSelected(selected?.id === route.id ? null : route)}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+                            <div>
+                                <p style={{ margin: '0 0 4px', fontWeight: 800, color: '#f1f5f9', fontSize: 14 }}>{route.name}</p>
+                                <p style={{ margin: 0, fontSize: 12, color: '#6b7280' }}>Driver: {route.driver} · {route.phone}</p>
                             </div>
-
-                            {selectedBus?.id === bus.id && (
-                                <div>
-                                    {/* Route stops */}
-                                    <div style={{ display: "flex", alignItems: "center", gap: 0, marginBottom: 14, marginTop: 8 }}>
-                                        {bus.stops.map((stop, i) => (
-                                            <div key={stop} style={{ display: "flex", alignItems: "center", flex: 1 }}>
-                                                <div style={{ textAlign: "center", flex: 1 }}>
-                                                    <div style={{
-                                                        width: 10, height: 10, borderRadius: "50%", margin: "0 auto 4px",
-                                                        background: i === 0 ? "#34d399" : i === bus.stops.length - 1 ? "#c084fc" : "#60a5fa"
-                                                    }} />
-                                                    <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>{stop}</div>
-                                                </div>
-                                                {i < bus.stops.length - 1 && (
-                                                    <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.1)" }} />
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div style={{ display: "flex", gap: 8 }}>
-                                        <button onClick={() => window.open(`tel:${bus.phone}`)} style={{
-                                            flex: 1, background: "rgba(52,211,153,0.15)", border: "0.5px solid rgba(52,211,153,0.3)",
-                                            color: "#34d399", padding: "8px", borderRadius: 8, fontSize: 12, cursor: "pointer"
-                                        }}>📞 Call Driver</button>
-                                        <button style={{
-                                            flex: 1, background: "rgba(96,165,250,0.15)", border: "0.5px solid rgba(96,165,250,0.3)",
-                                            color: "#60a5fa", padding: "8px", borderRadius: 8, fontSize: 12, cursor: "pointer"
-                                        }}>💬 WhatsApp</button>
-                                    </div>
-                                </div>
-                            )}
+                            <Badge color={STATUS_COLOR[route.status]}>{route.status}</Badge>
                         </div>
-                    ))}
-                </div>
-            )}
-
-            {/* Routes View */}
-            {view === "routes" && (
-                <div>
-                    {BUSES.map(bus => (
-                        <div key={bus.id} style={{ background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "14px 16px", marginBottom: 10 }}>
-                            <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 8 }}>{bus.route}</div>
-                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                {bus.stops.map((stop, i) => (
-                                    <span key={stop} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.6)" }}>
-                                        {i + 1}. {stop}
-                                    </span>
-                                ))}
+                        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                            <div>
+                                <p style={{ margin: 0, fontSize: 10, color: '#6b7280', letterSpacing: 1 }}>STUDENTS</p>
+                                <p style={{ margin: 0, fontSize: 18, fontWeight: 900, color: '#4e8ef7' }}>{route.students}/{route.seats}</p>
                             </div>
-                            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 8 }}>
-                                {bus.students} students · Capacity: {bus.capacity}
+                            <div>
+                                <p style={{ margin: 0, fontSize: 10, color: '#6b7280', letterSpacing: 1 }}>ETA</p>
+                                <p style={{ margin: 0, fontSize: 18, fontWeight: 900, color: route.status === 'Delayed' ? '#f45b69' : '#00d97e' }}>{route.eta}</p>
+                            </div>
+                            <div>
+                                <p style={{ margin: 0, fontSize: 10, color: '#6b7280', letterSpacing: 1 }}>CAPACITY</p>
+                                <div style={{ marginTop: 4, width: 80, height: 5, background: '#1f2d3d', borderRadius: 4 }}>
+                                    <div style={{ width: `${(route.students / route.seats) * 100}%`, height: '100%', background: '#4e8ef7', borderRadius: 4 }} />
+                                </div>
                             </div>
                         </div>
-                    ))}
-                </div>
-            )}
 
-            {/* Drivers View */}
-            {view === "drivers" && (
-                <div>
-                    {BUSES.map(bus => (
-                        <div key={bus.id} style={{ background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "14px 16px", marginBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                                <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(230,93,4,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🧑‍✈️</div>
-                                <div>
-                                    <div style={{ fontSize: 13, fontWeight: 600 }}>{bus.driver}</div>
-                                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>{bus.id} · {bus.phone}</div>
+                        {/* Stop list (when selected) */}
+                        {selected?.id === route.id && (
+                            <div style={{ marginTop: 16, borderTop: '1px solid #1f2d3d', paddingTop: 14 }}>
+                                <p style={{ margin: '0 0 10px', fontSize: 11, color: '#9ca3af', fontWeight: 700, letterSpacing: 1 }}>STOPS</p>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                    {route.stops.map((stop, i) => (
+                                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                            <div style={{
+                                                width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+                                                background: i === route.stops.length - 1 ? '#00d97e' : '#1f2d3d',
+                                                border: `2px solid ${i === route.stops.length - 1 ? '#00d97e' : '#374151'}`,
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontSize: 10, color: '#fff', fontWeight: 700
+                                            }}>{i + 1}</div>
+                                            <span style={{ fontSize: 12, color: i === route.stops.length - 1 ? '#00d97e' : '#d1d5db', fontWeight: i === route.stops.length - 1 ? 700 : 400 }}>{stop}</span>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                            <button onClick={() => window.open(`tel:${bus.phone}`)} style={{
-                                background: "rgba(52,211,153,0.15)", border: "0.5px solid rgba(52,211,153,0.3)",
-                                color: "#34d399", padding: "8px 14px", borderRadius: 8, fontSize: 12, cursor: "pointer"
-                            }}>📞 Call</button>
-                        </div>
-                    ))}
-                </div>
-            )}
+                        )}
+                    </Card>
+                ))}
+            </div>
         </div>
     );
 }
 
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // 3. MODULAR MARKETPLACE
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 
-const MODULES = [
-    { id: "ai_brain", name: "AI Brain", icon: "🧠", category: "Core", price: "Free", installed: true, desc: "Student prediction, dropout alerts, performance tracking", rating: 4.9, reviews: 128 },
-    { id: "automation", name: "Automation Layer", icon: "⚡", category: "Core", price: "Free", installed: true, desc: "Auto workflows — admission, attendance, fees, exams", rating: 4.8, reviews: 95 },
-    { id: "multi_app", name: "Multi-App Ecosystem", icon: "📱", category: "Core", price: "Free", installed: true, desc: "Student, Teacher, Parent, Admin apps", rating: 4.7, reviews: 87 },
-    { id: "transport", name: "Transport Manager", icon: "🚌", category: "Operations", price: "Free", installed: true, desc: "Live bus tracking, route management, driver app", rating: 4.6, reviews: 62 },
-    { id: "timetable", name: "Smart Timetable", icon: "📅", category: "Academic", price: "Free", installed: true, desc: "AI timetable generation, teacher clash detection", rating: 4.5, reviews: 74 },
-    { id: "whatsapp", name: "WhatsApp Gateway", icon: "💬", category: "Communication", price: "₹999/mo", installed: false, desc: "Real WhatsApp messages — attendance, fees, results", rating: 4.9, reviews: 215 },
-    { id: "razorpay", name: "Fee Payment Gateway", icon: "💳", category: "Finance", price: "2% per txn", installed: false, desc: "Online fee collection — UPI, Cards, Net Banking", rating: 4.8, reviews: 183 },
-    { id: "biometric", name: "Biometric Integration", icon: "👆", category: "Security", price: "₹1,999/mo", installed: false, desc: "Fingerprint attendance — device sync", rating: 4.4, reviews: 41 },
-    { id: "cctv_ai", name: "CCTV AI Monitor", icon: "📹", category: "Security", price: "₹2,999/mo", installed: false, desc: "AI-powered CCTV — student behavior, safety alerts", rating: 4.3, reviews: 28 },
-    { id: "govt_portal", name: "Govt Portal Sync", icon: "🏛️", category: "Compliance", price: "₹499/mo", installed: false, desc: "Auto sync with UDISE, state education portals", rating: 4.2, reviews: 19 },
-    { id: "library", name: "Library Manager", icon: "📚", category: "Academic", price: "Free", installed: false, desc: "Book issue, return, fine management", rating: 4.1, reviews: 35 },
-    { id: "hostel", name: "Hostel Manager", icon: "🏠", category: "Operations", price: "₹799/mo", installed: false, desc: "Room allocation, mess, attendance, fee", rating: 4.0, reviews: 22 },
+const PRODUCTS = [
+    { id: 1, name: 'Class 10 NCERT Set (All Subjects)', category: 'Books', price: 1450, stock: 23, sold: 87, rating: 4.8, icon: '📚' },
+    { id: 2, name: 'School Uniform (Summer Set)', category: 'Uniform', price: 850, stock: 56, sold: 134, rating: 4.6, icon: '👕' },
+    { id: 3, name: 'Geometry Box + Stationery Kit', category: 'Stationery', price: 320, stock: 78, sold: 203, rating: 4.9, icon: '📐' },
+    { id: 4, name: 'School Bag (Premium)', category: 'Accessories', price: 1200, stock: 12, sold: 56, rating: 4.7, icon: '🎒' },
+    { id: 5, name: 'Lab Coat + Safety Kit', category: 'Lab', price: 650, stock: 34, sold: 45, rating: 4.5, icon: '🥼' },
+    { id: 6, name: 'Sports Kit (Full Set)', category: 'Sports', price: 980, stock: 8, sold: 29, rating: 4.4, icon: '⚽' },
+    { id: 7, name: 'Computer Science Book Set', category: 'Books', price: 680, stock: 15, sold: 62, rating: 4.7, icon: '💻' },
+    { id: 8, name: 'Winter Uniform Set', category: 'Uniform', price: 1100, stock: 0, sold: 78, rating: 4.5, icon: '🧥' },
 ];
 
-const CATEGORIES = ["All", "Core", "Academic", "Operations", "Communication", "Finance", "Security", "Compliance"];
+const CATEGORIES_M = ['All', 'Books', 'Uniform', 'Stationery', 'Accessories', 'Lab', 'Sports'];
+const CAT_COLORS = { Books: '#4e8ef7', Uniform: '#00d97e', Stationery: '#a78bfa', Accessories: '#f97316', Lab: '#00c4cc', Sports: '#f6c90e' };
 
 export function ModularMarketplace() {
-    const [installedModules, setInstalledModules] = useState(MODULES.filter(m => m.installed).map(m => m.id));
-    const [selectedCategory, setSelectedCategory] = useState("All");
-    const [search, setSearch] = useState("");
+    const [filter, setFilter] = useState('All');
+    const [cart, setCart] = useState([]);
+    const [search, setSearch] = useState('');
+    const [showCart, setShowCart] = useState(false);
+    const [orderPlaced, setOrderPlaced] = useState(false);
 
-    const filtered = MODULES.filter(m => {
-        const matchCat = selectedCategory === "All" || m.category === selectedCategory;
-        const matchSearch = m.name.toLowerCase().includes(search.toLowerCase()) || m.desc.toLowerCase().includes(search.toLowerCase());
+    const products = PRODUCTS.filter(p => {
+        const matchCat = filter === 'All' || p.category === filter;
+        const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
         return matchCat && matchSearch;
     });
 
-    const toggleModule = (moduleId) => {
-        const module = MODULES.find(m => m.id === moduleId);
-        if (module.price !== "Free" && !installedModules.includes(moduleId)) {
-            alert(`${module.name} — ${module.price}\n\nJaise hi payment setup ho — ek click mein activate!`);
-            return;
-        }
-        setInstalledModules(prev =>
-            prev.includes(moduleId) ? prev.filter(id => id !== moduleId) : [...prev, moduleId]
-        );
+    const addToCart = (product) => {
+        if (product.stock === 0) return;
+        setCart(prev => {
+            const existing = prev.find(i => i.id === product.id);
+            if (existing) return prev.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i);
+            return [...prev, { ...product, qty: 1 }];
+        });
     };
 
+    const removeFromCart = (id) => setCart(prev => prev.filter(i => i.id !== id));
+
+    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+
+    const placeOrder = () => {
+        setOrderPlaced(true);
+        setCart([]);
+        setTimeout(() => { setOrderPlaced(false); setShowCart(false); }, 3000);
+    };
+
+    const fmt = n => '₹' + Number(n).toLocaleString('en-IN');
+
     return (
-        <div style={{ color: "#fff", fontFamily: "inherit", marginTop: 24 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                <div>
-                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 3 }}>
-                        Salesforce Model
-                    </div>
-                    <div style={{ fontSize: 18, fontWeight: 700 }}>Module Marketplace</div>
-                </div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
-                    {installedModules.length}/{MODULES.length} installed
-                </div>
-            </div>
-
-            {/* Search + Filter */}
-            <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
-                <input placeholder="Search modules..." value={search} onChange={e => setSearch(e.target.value)} style={{
-                    flex: 1, background: "rgba(255,255,255,0.05)", border: "0.5px solid rgba(255,255,255,0.1)",
-                    borderRadius: 8, padding: "8px 14px", color: "#fff", fontSize: 13, minWidth: 200
-                }} />
-            </div>
-
-            {/* Categories */}
-            <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
-                {CATEGORIES.map(cat => (
-                    <button key={cat} onClick={() => setSelectedCategory(cat)} style={{
-                        background: selectedCategory === cat ? "rgba(192,132,252,0.2)" : "transparent",
-                        border: `0.5px solid ${selectedCategory === cat ? "#c084fc" : "rgba(255,255,255,0.1)"}`,
-                        color: selectedCategory === cat ? "#c084fc" : "rgba(255,255,255,0.4)",
-                        padding: "5px 12px", borderRadius: 20, fontSize: 11, cursor: "pointer"
-                    }}>{cat}</button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {/* Stats */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+                {[
+                    { icon: '🛍️', label: 'Products', value: PRODUCTS.length, color: '#4e8ef7' },
+                    { icon: '✅', label: 'In Stock', value: PRODUCTS.filter(p => p.stock > 0).length, color: '#00d97e' },
+                    { icon: '📦', label: 'Total Sold', value: PRODUCTS.reduce((s, p) => s + p.sold, 0), color: '#a78bfa' },
+                    { icon: '💰', label: 'Revenue', value: fmt(PRODUCTS.reduce((s, p) => s + p.price * p.sold, 0)), color: '#f97316' },
+                ].map(s => (
+                    <Card key={s.label} style={{ padding: '16px 18px' }}>
+                        <span style={{ fontSize: 22 }}>{s.icon}</span>
+                        <p style={{ margin: '6px 0 2px', fontSize: 10, color: '#6b7280', fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase' }}>{s.label}</p>
+                        <p style={{ margin: 0, fontSize: s.label === 'Revenue' ? 16 : 24, fontWeight: 900, color: s.color }}>{s.value}</p>
+                    </Card>
                 ))}
             </div>
 
-            {/* Modules Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
-                {filtered.map(module => {
-                    const isInstalled = installedModules.includes(module.id);
-                    const isFree = module.price === "Free";
+            {/* Toolbar */}
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                <input placeholder="🔍 Search products..." value={search} onChange={e => setSearch(e.target.value)}
+                    style={{ flex: 1, minWidth: 200, background: '#111827', border: '1px solid #1f2d3d', borderRadius: 10, padding: '10px 16px', color: '#f1f5f9', fontSize: 13, outline: 'none' }} />
+                <button onClick={() => setShowCart(!showCart)} style={{
+                    padding: '10px 18px', borderRadius: 10, border: 'none',
+                    background: cartCount > 0 ? '#f97316' : '#1f2d3d',
+                    color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer'
+                }}>🛒 Cart {cartCount > 0 ? `(${cartCount})` : ''}</button>
+            </div>
+
+            {/* Category filter */}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {CATEGORIES_M.map(c => (
+                    <button key={c} onClick={() => setFilter(c)} style={{
+                        padding: '6px 16px', borderRadius: 20, border: 'none',
+                        background: filter === c ? (CAT_COLORS[c] || '#4e8ef7') : '#1f2d3d',
+                        color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer'
+                    }}>{c}</button>
+                ))}
+            </div>
+
+            {/* Cart panel */}
+            {showCart && (
+                <Card style={{ border: '1px solid #f97316' }}>
+                    <p style={{ margin: '0 0 16px', fontWeight: 800, color: '#f97316', fontSize: 15 }}>🛒 Your Cart</p>
+                    {orderPlaced ? (
+                        <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                            <p style={{ fontSize: 40, margin: '0 0 10px' }}>🎉</p>
+                            <p style={{ fontWeight: 800, color: '#00d97e', fontSize: 16, margin: 0 }}>Order Placed Successfully!</p>
+                            <p style={{ color: '#6b7280', fontSize: 12, margin: '4px 0 0' }}>Order ID: ASM-{Date.now().toString(36).toUpperCase()}</p>
+                        </div>
+                    ) : cart.length === 0 ? (
+                        <p style={{ color: '#6b7280', fontSize: 13, textAlign: 'center', padding: '20px 0' }}>Cart is empty. Add items from below.</p>
+                    ) : (
+                        <>
+                            {cart.map(item => (
+                                <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #1f2d3d' }}>
+                                    <div>
+                                        <p style={{ margin: 0, fontWeight: 700, color: '#f1f5f9', fontSize: 13 }}>{item.icon} {item.name}</p>
+                                        <p style={{ margin: 0, fontSize: 12, color: '#6b7280' }}>Qty: {item.qty} × {fmt(item.price)}</p>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                        <span style={{ fontWeight: 800, color: '#f97316', fontSize: 14 }}>{fmt(item.price * item.qty)}</span>
+                                        <button onClick={() => removeFromCart(item.id)} style={{ background: 'transparent', border: '1px solid #f45b6933', borderRadius: 6, padding: '4px 8px', color: '#f45b69', cursor: 'pointer', fontSize: 11 }}>✕</button>
+                                    </div>
+                                </div>
+                            ))}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+                                <div>
+                                    <p style={{ margin: 0, fontSize: 12, color: '#6b7280' }}>Total ({cartCount} items)</p>
+                                    <p style={{ margin: 0, fontSize: 22, fontWeight: 900, color: '#f97316' }}>{fmt(total)}</p>
+                                </div>
+                                <Btn color="#00d97e" onClick={placeOrder}>✅ Place Order</Btn>
+                            </div>
+                        </>
+                    )}
+                </Card>
+            )}
+
+            {/* Product grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
+                {products.map(product => {
+                    const inCart = cart.find(i => i.id === product.id);
+                    const catColor = CAT_COLORS[product.category] || '#6b7280';
                     return (
-                        <div key={module.id} style={{
-                            background: "rgba(255,255,255,0.03)", border: `0.5px solid ${isInstalled ? "rgba(192,132,252,0.3)" : "rgba(255,255,255,0.07)"}`,
-                            borderRadius: 14, padding: "16px", position: "relative"
-                        }}>
-                            {isInstalled && (
-                                <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(52,211,153,0.2)", border: "0.5px solid rgba(52,211,153,0.4)", color: "#34d399", fontSize: 10, padding: "2px 8px", borderRadius: 20, fontWeight: 600 }}>
-                                    INSTALLED
+                        <Card key={product.id} style={{ position: 'relative' }}>
+                            {product.stock === 0 && (
+                                <div style={{ position: 'absolute', top: 12, right: 12 }}>
+                                    <Badge color="#f45b69">Out of Stock</Badge>
                                 </div>
                             )}
-                            <div style={{ fontSize: 28, marginBottom: 10 }}>{module.icon}</div>
-                            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{module.name}</div>
-                            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 10 }}>{module.category}</div>
-                            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.5, marginBottom: 12 }}>{module.desc}</div>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                                <div style={{ fontSize: 12, color: isFree ? "#34d399" : "#fbbf24", fontWeight: 600 }}>{module.price}</div>
-                                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>⭐ {module.rating} ({module.reviews})</div>
+                            {product.stock > 0 && product.stock <= 10 && (
+                                <div style={{ position: 'absolute', top: 12, right: 12 }}>
+                                    <Badge color="#f6c90e">Low Stock</Badge>
+                                </div>
+                            )}
+                            <div style={{ fontSize: 36, marginBottom: 12 }}>{product.icon}</div>
+                            <p style={{ margin: '0 0 4px', fontWeight: 800, color: '#f1f5f9', fontSize: 14, lineHeight: 1.4 }}>{product.name}</p>
+                            <Badge color={catColor}>{product.category}</Badge>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
+                                <div>
+                                    <p style={{ margin: 0, fontSize: 20, fontWeight: 900, color: '#f97316' }}>₹{product.price.toLocaleString('en-IN')}</p>
+                                    <p style={{ margin: 0, fontSize: 11, color: '#6b7280' }}>⭐ {product.rating} · {product.sold} sold</p>
+                                </div>
+                                <button
+                                    onClick={() => addToCart(product)}
+                                    disabled={product.stock === 0}
+                                    style={{
+                                        padding: '8px 14px', borderRadius: 10, border: 'none',
+                                        background: product.stock === 0 ? '#1f2d3d' : inCart ? '#00d97e' : '#f97316',
+                                        color: product.stock === 0 ? '#6b7280' : '#fff',
+                                        fontWeight: 700, fontSize: 12, cursor: product.stock === 0 ? 'not-allowed' : 'pointer'
+                                    }}
+                                >
+                                    {product.stock === 0 ? 'Out' : inCart ? `✓ In Cart` : '+ Add'}
+                                </button>
                             </div>
-                            <button onClick={() => toggleModule(module.id)} style={{
-                                width: "100%", padding: "8px", borderRadius: 8, fontSize: 12, fontWeight: 600,
-                                cursor: "pointer", border: "none",
-                                background: isInstalled ? "rgba(244,114,182,0.15)" : isFree ? "rgba(52,211,153,0.15)" : "rgba(251,191,36,0.15)",
-                                color: isInstalled ? "#f472b6" : isFree ? "#34d399" : "#fbbf24",
-                            }}>
-                                {isInstalled ? "Remove Module" : isFree ? "Install Free" : `Get — ${module.price}`}
-                            </button>
-                        </div>
+                            <p style={{ margin: '8px 0 0', fontSize: 11, color: product.stock > 10 ? '#6b7280' : '#f6c90e' }}>
+                                Stock: {product.stock} units
+                            </p>
+                        </Card>
                     );
                 })}
             </div>

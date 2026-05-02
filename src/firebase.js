@@ -1,16 +1,22 @@
+// firebase.js — AuraSync School AI
+// Replace the firebaseConfig values with your actual Firebase project credentials
+// Get them from: https://console.firebase.google.com → Project Settings → General → Your apps
+
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
-// Ye tumhare project ki settings hain
 const firebaseConfig = {
-  apiKey: "AIzaSyD3IfCedwm7wrCl5HN8koyQUyr4QbKAq_4", // Ye tumhein Firebase Console -> Project Settings mein milega
-  authDomain: "aurasynk-1983.firebaseapp.com",
-  projectId: "aurasynk-1983",
-  storageBucket: "aurasynk-1983.firebasestorage.app",
-  messagingSenderId: "847779577096",
-  appId: "1:847779577096:web:ae7cea5b6a2f6e9f8a80bd"
-
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
+
 export const db = getFirestore(app);
+export const auth = getAuth(app);
+export default app;
