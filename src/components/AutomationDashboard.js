@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const API = "https://aura-school-backend.onrender.com";
+const API = "https://auracrm-school-backend.onrender.com";
 
 const FLOW_COLORS = {
     admission: { bg: "#e8f5ef", text: "#085041", border: "#5dcaa5", dark: "#2d6a4f" },

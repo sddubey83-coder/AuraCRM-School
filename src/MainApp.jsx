@@ -1,3 +1,4 @@
+import StaffModule from './StaffModule';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { RBACProvider } from "./RBAC";
 import RealtimeDashboard from './RealtimeDashboard';
@@ -8,14 +9,25 @@ import { db } from './firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "firebase/firestore";
 import axios from 'axios';
 import { TimetableOptimizer, TransportApp, ModularMarketplace } from './SchoolFeatures';
+import Attendance from './components/Attendance';
+import NoticeBoard from './components/NoticeBoard';
+import ExamScheduler from './components/ExamScheduler';
+import HomeworkTracker from './components/HomeworkTracker';
+import AcademicCalendar from './components/AcademicCalendar';
+import ParentPortal from './components/ParentPortal';
+import AuditLogs from './components/AuditLogs';
+import AdminPanel from './components/AdminPanel';
+import AutomationDashboard from './components/AutomationDashboard';
+import LibraryManagement from './utils/LibraryManagement';
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
-const API = "https://aura-school-backend.onrender.com";
+const API = process.env.REACT_APP_API_URL;
 // eslint-disable-next-line
 const isDemoMode = true;
 const TABS = [
     { id: 'command', icon: '🧠', label: 'AI Command' },
     { id: 'admissions', icon: '🎯', label: 'Admissions' },
     { id: 'students', icon: '👨‍🎓', label: 'Students' },
+    { id: 'staff', icon: '👥', label: 'Staff' },
     { id: 'results', icon: '📊', label: 'Results & PDF' },
     { id: 'fees', icon: '💰', label: 'Fees & Revenue' },
     { id: 'automation', icon: '⚡', label: 'AI Automation' },
@@ -28,6 +40,16 @@ const TABS = [
     { id: 'documents', label: 'Syllabus & Docs', icon: '📂' },
     { id: 'roles', icon: '🔐', label: 'Roles' },
     { id: 'settings', icon: '⚙️', label: 'Settings' },
+    { id: 'attendance', icon: '📅', label: 'Attendance' },
+    { id: 'exams', icon: '📝', label: 'Exam Schedule' },
+    { id: 'noticeboard', icon: '📌', label: 'Notice Board' },
+    { id: 'homework', icon: '📚', label: 'Homework' },
+    { id: 'calendar', icon: '🗓️', label: 'Academic Calendar' },
+    { id: 'library', icon: '📖', label: 'Library' },
+    { id: 'parentportal', icon: '👨‍👩‍👧', label: 'Parent Portal' },
+    { id: 'auditlogs', icon: '🔍', label: 'Audit Logs' },
+    { id: 'adminpanel', icon: '🛠️', label: 'Admin Panel' },
+    { id: 'automationdash', icon: '🤖', label: 'Auto Dashboard' },
 ];
 
 const SOURCES = ['Walk-in', 'WhatsApp', 'Instagram', 'Reference', 'Website', 'Phone'];
@@ -1114,7 +1136,8 @@ export default function MainApp({ children }) {
         if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
         const q = query(collection(db, 'leads'), orderBy('timestamp', 'desc'));
         unsubRef.current = onSnapshot(q, snapshot => { setLeads(snapshot.docs.map(d => ({ id: d.id, ...d.data() }))); }, err => console.error('Firestore:', err));
-        axios.get(`${API}/get-real-fees`).then(r => setRealFees(r.data)).catch(() => { });
+        const t = localStorage.getItem('aura_token');
+        axios.get(`${API}/get-real-fees`, { headers: { Authorization: `Bearer ${t}` } }).then(r => setRealFees(r.data)).catch(() => { });
     }, []);
 
     useEffect(() => {
@@ -1178,6 +1201,7 @@ export default function MainApp({ children }) {
             case 'command': return <><CommandCenter leads={leads} onSendCampaign={sendCampaign} /><AIBrainDashboard /></>;
             case 'admissions': return <AdmissionsEngine leads={leads} onEditLead={setEditingLead} showToast={showToast} />;
             case 'students': return <><StudentsModule leads={leads} onEditLead={setEditingLead} showToast={showToast} /><MultiApp /></>;
+            case 'staff': return <StaffModule token={localStorage.getItem('aura_token')} API={API} showToast={showToast} />;
             case 'results': return <ResultPDFModule leads={leads} showToast={showToast} />;
             case 'fees': return <FeesEngine leads={leads} realFees={realFees} showToast={showToast} />;
             case 'automation': return <AutomationEngine leads={leads} />;
@@ -1190,6 +1214,16 @@ export default function MainApp({ children }) {
             case 'marketplace': return <ModularMarketplace />;
             case 'documents': return <DocsManager userRole="admin" schoolId="AuraIndore_01" />;
             case 'roles': return <RBACProvider><Card><p style={{ margin: '0 0 16px', fontWeight: 700, color: '#f1f5f9' }}>🔐 RBAC Active</p><p style={{ margin: 0, color: '#9ca3af', fontSize: 13 }}>Role-based access control is protecting routes.</p></Card></RBACProvider>;
+            case 'attendance': return <Attendance />;
+            case 'exams': return <ExamScheduler />;
+            case 'noticeboard': return <NoticeBoard />;
+            case 'homework': return <HomeworkTracker />;
+            case 'calendar': return <AcademicCalendar />;
+            case 'library': return <LibraryManagement />;
+            case 'parentportal': return <ParentPortal />;
+            case 'auditlogs': return <AuditLogs />;
+            case 'adminpanel': return <RBACProvider><AdminPanel /></RBACProvider>;
+            case 'automationdash': return <AutomationDashboard />;
             default: return <CommandCenter leads={leads} onSendCampaign={sendCampaign} />;
         }
     };
