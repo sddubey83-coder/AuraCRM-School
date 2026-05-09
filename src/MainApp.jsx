@@ -50,6 +50,7 @@ import SchoolOSUltimate from './components/ResultCard';
 import CSVManager from './components/CSVManager';
 import LeadSources from './components/LeadSources';
 import FeesCollection from './components/FeesCollection';
+import MigrateData from './components/MigrateData';
 import {
     LabManagement,
     FurnitureAssets,
@@ -163,6 +164,7 @@ const TAB_GROUPS = [
             { id: 'settings', icon: '⚙️', label: 'Settings' },
             { id: 'csvmanager', icon: '📥', label: 'CSV Import/Export' },
             { id: 'sources', icon: '🔗', label: 'Lead Sources' },
+            { id: 'migrate', icon: '🔄', label: 'Migrate Data' },
         ]
     },
     {
@@ -1395,6 +1397,7 @@ export default function MainApp({ children }) {
             case 'csvmanager': return <CSVManager />;
             case 'sources': return <LeadSources />;
             case 'feescollection': return <FeesCollection />;
+            case 'migrate': return <MigrateData />;
             default: return <CommandCenter leads={leads} onSendCampaign={sendCampaign} />;
         }
     };
