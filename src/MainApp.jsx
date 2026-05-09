@@ -12,44 +12,171 @@ import { TimetableOptimizer, TransportApp, ModularMarketplace } from './SchoolFe
 import Attendance from './components/Attendance';
 import NoticeBoard from './components/NoticeBoard';
 import ExamScheduler from './components/ExamScheduler';
+import CertificateGenerator from './components/CertificateGenerator';
 import HomeworkTracker from './components/HomeworkTracker';
 import AcademicCalendar from './components/AcademicCalendar';
 import ParentPortal from './components/ParentPortal';
+import SyllabusMapping from './components/SyllabusMapping';
+import LessonPlanning from './components/LessonPlanning';
+import PromotionModule from './components/PromotionModule';
+import BoardExamPrep from './components/BoardExamPrep';
 import AuditLogs from './components/AuditLogs';
 import AdminPanel from './components/AdminPanel';
+import PayrollModule from './components/PayrollModule';
+import HostelModule from './components/HostelModule';
+import MedicalRecords from './components/MedicalRecords';
+import CanteenModule from './components/CanteenModule';
 import AutomationDashboard from './components/AutomationDashboard';
+import VisitorRegister from './components/VisitorRegister';
+import DisciplineRecords from './components/DisciplineRecords';
 import LibraryManagement from './utils/LibraryManagement';
+import StudentIDCards from './components/StudentIDCards';
+import AlumniDatabase from './components/AlumniDatabase';
+import ScholarshipModule from './components/ScholarshipModule';
+import AIChatbot from './components/AIChatbot';
+import SportsModule from './components/SportsModule';
+import FeeStructure from './components/FeeStructure';
+import BudgetAudit from './components/BudgetAudit';
+import GatePass from './components/GatePass';
+import FaceRecognition from './components/FaceRecognition';
+import GPSTracking from './components/GPSTracking';
+import DropoutPrediction from './components/DropoutPrediction';
+import TCBonafide from './components/TCBonafide';
+import MedicalEmergency from './components/MedicalEmergency';
+import OnlineClasses from './components/OnlineClasses';
+import TeacherPortal from './components/TeacherPortal';
+import StudentPortal from './components/StudentPortal';
+import SchoolOSUltimate from './components/ResultCard';
+import CSVManager from './components/CSVManager';
+import LeadSources from './components/LeadSources';
+import FeesCollection from './components/FeesCollection';
+import {
+    LabManagement,
+    FurnitureAssets,
+    ITAssets,
+    MaintenanceRequests,
+    RoomManagement,
+    FeeConcession,
+    InstallmentModule,
+    RefundManagement,
+    GSTModule,
+    BankReconciliation,
+    TournamentManagement,
+    CulturalEvents,
+    AnnualDayPlanning,
+    InventoryManagement,
+} from './components/NewFeatures';
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const API = process.env.REACT_APP_API_URL;
 // eslint-disable-next-line
 const isDemoMode = true;
-const TABS = [
-    { id: 'command', icon: '🧠', label: 'AI Command' },
-    { id: 'admissions', icon: '🎯', label: 'Admissions' },
-    { id: 'students', icon: '👨‍🎓', label: 'Students' },
-    { id: 'staff', icon: '👥', label: 'Staff' },
-    { id: 'results', icon: '📊', label: 'Results & PDF' },
-    { id: 'fees', icon: '💰', label: 'Fees & Revenue' },
-    { id: 'automation', icon: '⚡', label: 'AI Automation' },
-    { id: 'automation_status', icon: '📋', label: 'Automation Logs' },
-    { id: 'comms', icon: '📞', label: 'Communications' },
-    { id: 'insights', icon: '📈', label: 'Insights' },
-    { id: 'timetable', icon: '📅', label: 'Timetable' },
-    { id: 'transport', icon: '🚌', label: 'Transport' },
-    { id: 'marketplace', icon: '🛍️', label: 'Marketplace' },
-    { id: 'documents', label: 'Syllabus & Docs', icon: '📂' },
-    { id: 'roles', icon: '🔐', label: 'Roles' },
-    { id: 'settings', icon: '⚙️', label: 'Settings' },
-    { id: 'attendance', icon: '📅', label: 'Attendance' },
-    { id: 'exams', icon: '📝', label: 'Exam Schedule' },
-    { id: 'noticeboard', icon: '📌', label: 'Notice Board' },
-    { id: 'homework', icon: '📚', label: 'Homework' },
-    { id: 'calendar', icon: '🗓️', label: 'Academic Calendar' },
-    { id: 'library', icon: '📖', label: 'Library' },
-    { id: 'parentportal', icon: '👨‍👩‍👧', label: 'Parent Portal' },
-    { id: 'auditlogs', icon: '🔍', label: 'Audit Logs' },
-    { id: 'adminpanel', icon: '🛠️', label: 'Admin Panel' },
-    { id: 'automationdash', icon: '🤖', label: 'Auto Dashboard' },
+const TAB_GROUPS = [
+    {
+        id: 'dashboard', icon: '📊', label: 'Dashboard',
+        tabs: [
+            { id: 'command', icon: '🧠', label: 'AI Command' },
+            { id: 'insights', icon: '📈', label: 'Insights' },
+            { id: 'automationdash', icon: '🤖', label: 'Auto Dashboard' },
+            { id: 'automation_status', icon: '📋', label: 'Automation Logs' },
+            { id: 'chatbot', icon: '🤖', label: 'AI Chatbot' },
+        ]
+    },
+    {
+        id: 'students', icon: '👨‍🎓', label: 'Students',
+        tabs: [
+            { id: 'admissions', icon: '🎯', label: 'Admissions' },
+            { id: 'students', icon: '👨‍🎓', label: 'Students' },
+            { id: 'attendance', icon: '📅', label: 'Attendance' },
+            { id: 'results', icon: '📊', label: 'Results & PDF' },
+            { id: 'discipline', icon: '⚠️', label: 'Discipline' },
+            { id: 'medical', icon: '🏥', label: 'Medical Records' },
+            { id: 'parentportal', icon: '👨‍👩‍👧', label: 'Parent Portal' },
+            { id: 'studentportal', icon: '👨‍🎓', label: 'Student Portal' },
+            { id: 'syllabus', icon: '📚', label: 'Syllabus Mapping' },
+            { id: 'lessons', icon: '📝', label: 'Lesson Planning' },
+            { id: 'promotions', icon: '🎓', label: 'Promotion/Detention' },
+            { id: 'boardprep', icon: '📋', label: 'Board Exam Prep' },
+            { id: 'idcards', icon: '🪪', label: 'ID Cards' },
+            { id: 'alumni', icon: '🎓', label: 'Alumni' },
+            { id: 'scholarships', icon: '🏆', label: 'Scholarships' },
+            { id: 'facerecognition', icon: '📸', label: 'Face Recognition' },
+            { id: 'dropoutprediction', icon: '🤖', label: 'Dropout Prediction' },
+            { id: 'tcbonafide', icon: '📄', label: 'TC/Bonafide' },
+            { id: 'medical_emergency', icon: '🚨', label: 'Medical Emergency' },
+            { id: 'resultanalysis', icon: '📊', label: 'Result Analysis' },
+        ]
+    },
+    {
+        id: 'staff_group', icon: '👨‍🏫', label: 'Staff',
+        tabs: [
+            { id: 'staff', icon: '👥', label: 'Staff' },
+            { id: 'payroll', icon: '💰', label: 'Payroll' },
+            { id: 'timetable', icon: '📅', label: 'Timetable' },
+            { id: 'automation', icon: '⚡', label: 'AI Automation' },
+            { id: 'teacherportal', icon: '👨‍🏫', label: 'Teacher Portal' },
+        ]
+    },
+    {
+        id: 'finance', icon: '💰', label: 'Finance',
+        tabs: [
+            { id: 'fees', icon: '💰', label: 'Fees & Revenue' },
+            { id: 'canteen', icon: '🍱', label: 'Canteen' },
+            { id: 'marketplace', icon: '🛍️', label: 'Marketplace' },
+            { id: 'feestructure', icon: '💰', label: 'Fee Structure' },
+            { id: 'budget', icon: '📊', label: 'Budget & Audit' },
+            { id: 'concession', icon: '🏷️', label: 'Fee Concession' },
+            { id: 'installments', icon: '📋', label: 'Installments' },
+            { id: 'refunds', icon: '💸', label: 'Refunds' },
+            { id: 'gst', icon: '📑', label: 'GST & Tax' },
+            { id: 'bankreconcile', icon: '🏦', label: 'Bank Reconciliation' },
+            { id: 'feescollection', icon: '💳', label: 'Fees Collection' },
+        ]
+    },
+    {
+        id: 'school', icon: '🏫', label: 'School',
+        tabs: [
+            { id: 'hostel', icon: '🏠', label: 'Hostel' },
+            { id: 'transport', icon: '🚌', label: 'Transport' },
+            { id: 'library', icon: '📖', label: 'Library' },
+            { id: 'visitors', icon: '🚪', label: 'Visitor Register' },
+            { id: 'documents', icon: '📂', label: 'Syllabus & Docs' },
+            { id: 'noticeboard', icon: '📌', label: 'Notice Board' },
+            { id: 'homework', icon: '📚', label: 'Homework' },
+            { id: 'calendar', icon: '🗓️', label: 'Academic Calendar' },
+            { id: 'exams', icon: '📝', label: 'Exam Schedule' },
+            { id: 'certificates', icon: '🎖️', label: 'Certificates' },
+            { id: 'sports', icon: '⚽', label: 'Sports' },
+            { id: 'gatepass', icon: '🚪', label: 'Gate Pass' },
+            { id: 'gpstracking', icon: '📍', label: 'GPS Tracking' },
+            { id: 'onlineclasses', icon: '💻', label: 'Online Classes' },
+            { id: 'tournaments', icon: '🏆', label: 'Tournaments' },
+            { id: 'culturalevents', icon: '🎭', label: 'Cultural Events' },
+            { id: 'annualday', icon: '🎊', label: 'Annual Day' },
+        ]
+    },
+    {
+        id: 'admin_group', icon: '🔒', label: 'Admin',
+        tabs: [
+            { id: 'adminpanel', icon: '🛠️', label: 'Admin Panel' },
+            { id: 'auditlogs', icon: '🔍', label: 'Audit Logs' },
+            { id: 'roles', icon: '🔐', label: 'Roles' },
+            { id: 'settings', icon: '⚙️', label: 'Settings' },
+            { id: 'csvmanager', icon: '📥', label: 'CSV Import/Export' },
+            { id: 'sources', icon: '🔗', label: 'Lead Sources' },
+        ]
+    },
+    {
+        id: 'infrastructure', icon: '🏗️', label: 'Infrastructure',
+        tabs: [
+            { id: 'labs', icon: '🔬', label: 'Lab Management' },
+            { id: 'furniture', icon: '🪑', label: 'Furniture/Assets' },
+            { id: 'itassets', icon: '💻', label: 'IT Assets' },
+            { id: 'maintenance', icon: '🔧', label: 'Maintenance' },
+            { id: 'rooms', icon: '🏫', label: 'Room Management' },
+            { id: 'inventory', icon: '📦', label: 'Inventory & Stock' },
+        ]
+    },
+
 ];
 
 const SOURCES = ['Walk-in', 'WhatsApp', 'Instagram', 'Reference', 'Website', 'Phone'];
@@ -241,7 +368,6 @@ function EditLeadModal({ lead, onClose, showToast }) {
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
     const handleSave = async () => {
         if (!form.student_name || !form.parent_phone) return showToast('Name and phone are required', 'error');
         setSaving(true);
@@ -1127,7 +1253,7 @@ export default function MainApp({ children }) {
     const [editingLead, setEditingLead] = useState(null);
     const [toast, setToast] = useState(null);
     const unsubRef = useRef(null);
-
+    const [openGroup, setOpenGroup] = useState('dashboard');
     const showToast = useCallback((message, type = 'success') => {
         setToast({ message, type, key: Date.now() });
     }, []);
@@ -1216,14 +1342,59 @@ export default function MainApp({ children }) {
             case 'roles': return <RBACProvider><Card><p style={{ margin: '0 0 16px', fontWeight: 700, color: '#f1f5f9' }}>🔐 RBAC Active</p><p style={{ margin: 0, color: '#9ca3af', fontSize: 13 }}>Role-based access control is protecting routes.</p></Card></RBACProvider>;
             case 'attendance': return <Attendance />;
             case 'exams': return <ExamScheduler />;
+            case 'certificates': return <CertificateGenerator />;
             case 'noticeboard': return <NoticeBoard />;
             case 'homework': return <HomeworkTracker />;
             case 'calendar': return <AcademicCalendar />;
+            case 'payroll': return <PayrollModule />;
+            case 'hostel': return <HostelModule />;
+            case 'medical': return <MedicalRecords />;
+            case 'canteen': return <CanteenModule />;
+            case 'visitors': return <VisitorRegister />;
+            case 'discipline': return <DisciplineRecords />;
             case 'library': return <LibraryManagement />;
             case 'parentportal': return <ParentPortal />;
             case 'auditlogs': return <AuditLogs />;
             case 'adminpanel': return <RBACProvider><AdminPanel /></RBACProvider>;
             case 'automationdash': return <AutomationDashboard />;
+            case 'syllabus': return <SyllabusMapping />;
+            case 'lessons': return <LessonPlanning />;
+            case 'promotions': return <PromotionModule />;
+            case 'boardprep': return <BoardExamPrep />;
+            case 'idcards': return <StudentIDCards />;
+            case 'alumni': return <AlumniDatabase />;
+            case 'scholarships': return <ScholarshipModule />;
+            case 'chatbot': return <AIChatbot />;
+            case 'sports': return <SportsModule />;
+            case 'feestructure': return <FeeStructure />;
+            case 'budget': return <BudgetAudit />;
+            case 'gatepass': return <GatePass />;
+            case 'facerecognition': return <FaceRecognition />;
+            case 'gpstracking': return <GPSTracking />;
+            case 'dropoutprediction': return <DropoutPrediction />;
+            case 'tcbonafide': return <TCBonafide />;
+            case 'medical_emergency': return <MedicalEmergency />;
+            case 'onlineclasses': return <OnlineClasses />;
+            case 'labs': return <LabManagement />;
+            case 'furniture': return <FurnitureAssets />;
+            case 'itassets': return <ITAssets />;
+            case 'maintenance': return <MaintenanceRequests />;
+            case 'rooms': return <RoomManagement />;
+            case 'concession': return <FeeConcession />;
+            case 'installments': return <InstallmentModule />;
+            case 'refunds': return <RefundManagement />;
+            case 'gst': return <GSTModule />;
+            case 'bankreconcile': return <BankReconciliation />;
+            case 'tournaments': return <TournamentManagement />;
+            case 'culturalevents': return <CulturalEvents />;
+            case 'annualday': return <AnnualDayPlanning />;
+            case 'inventory': return <InventoryManagement />;
+            case 'resultanalysis': return <SchoolOSUltimate />;
+            case 'teacherportal': return <TeacherPortal />;
+            case 'studentportal': return <StudentPortal />;
+            case 'csvmanager': return <CSVManager />;
+            case 'sources': return <LeadSources />;
+            case 'feescollection': return <FeesCollection />;
             default: return <CommandCenter leads={leads} onSendCampaign={sendCampaign} />;
         }
     };
@@ -1239,17 +1410,44 @@ export default function MainApp({ children }) {
                     {sidebarOpen && <div><p style={{ margin: 0, fontWeight: 900, color: '#f1f5f9', fontSize: 15 }}>AuraSync School</p><p style={{ margin: 0, fontSize: 10, color: '#6b7280' }}>AI Operating System</p></div>}
                 </div>
                 <nav style={{ flex: 1, padding: '12px 8px', overflowY: 'auto' }}>
-                    {TABS.map(tab => {
-                        const isActive = activeTab === tab.id;
-                        const hasBadge = tab.id === 'command' && activeLeadsCount > 0;
-                        return (
-                            <div key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 10, marginBottom: 4, cursor: 'pointer', background: isActive ? '#1f2d3d' : 'transparent', color: isActive ? '#4e8ef7' : '#9ca3af', fontWeight: isActive ? 700 : 500, fontSize: 13, transition: 'all .15s' }}>
-                                <span style={{ fontSize: 18, flexShrink: 0 }}>{tab.icon}</span>
-                                {sidebarOpen && <span style={{ whiteSpace: 'nowrap' }}>{tab.label}</span>}
-                                {hasBadge && <span style={{ marginLeft: 'auto', background: '#f45b69', color: '#fff', borderRadius: 20, padding: '1px 7px', fontSize: 10, fontWeight: 800 }}>{activeLeadsCount}</span>}
+                    {TAB_GROUPS.map(group => (
+                        <div key={group.id}>
+                            <div onClick={() => setOpenGroup(openGroup === group.id ? null : group.id)}
+                                style={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                    padding: '10px 12px', borderRadius: 10, marginBottom: 2, cursor: 'pointer',
+                                    background: openGroup === group.id ? '#1f2d3d' : 'transparent',
+                                    color: openGroup === group.id ? '#4e8ef7' : '#6b7280',
+                                    fontWeight: 700, fontSize: 12,
+                                }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <span style={{ fontSize: 16 }}>{group.icon}</span>
+                                    {sidebarOpen && <span style={{ textTransform: 'uppercase', letterSpacing: 1 }}>{group.label}</span>}
+                                </div>
+                                {sidebarOpen && <span style={{ fontSize: 10 }}>{openGroup === group.id ? '▼' : '▶'}</span>}
                             </div>
-                        );
-                    })}
+                            {openGroup === group.id && group.tabs.map(tab => {
+                                const isActive = activeTab === tab.id;
+                                const hasBadge = tab.id === 'command' && activeLeadsCount > 0;
+                                return (
+                                    <div key={tab.id} onClick={() => setActiveTab(tab.id)}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: 12,
+                                            padding: '9px 12px 9px 28px', borderRadius: 10, marginBottom: 2,
+                                            cursor: 'pointer',
+                                            background: isActive ? '#1f2d3d' : 'transparent',
+                                            color: isActive ? '#4e8ef7' : '#9ca3af',
+                                            fontWeight: isActive ? 700 : 500, fontSize: 13,
+                                            transition: 'all .15s'
+                                        }}>
+                                        <span style={{ fontSize: 16, flexShrink: 0 }}>{tab.icon}</span>
+                                        {sidebarOpen && <span style={{ whiteSpace: 'nowrap' }}>{tab.label}</span>}
+                                        {hasBadge && <span style={{ marginLeft: 'auto', background: '#f45b69', color: '#fff', borderRadius: 20, padding: '1px 7px', fontSize: 10, fontWeight: 800 }}>{activeLeadsCount}</span>}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ))}
                 </nav>
                 <div style={{ padding: '12px 8px', borderTop: '1px solid #1f2d3d' }}>
                     <div onClick={() => setSidebarOpen(!sidebarOpen)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', color: '#6b7280', fontSize: 13 }}><span style={{ fontSize: 18 }}>{sidebarOpen ? '◀' : '▶'}</span>{sidebarOpen && <span>Collapse</span>}</div>
@@ -1260,7 +1458,7 @@ export default function MainApp({ children }) {
             <div style={{ marginLeft: sidebarOpen ? 240 : 68, flex: 1, padding: '32px', transition: 'margin .25s', minHeight: '100vh' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
                     <div>
-                        <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: '#f1f5f9' }}>{TABS.find(t => t.id === activeTab)?.icon} {TABS.find(t => t.id === activeTab)?.label}</h2>
+                        <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: '#f1f5f9' }}>{TAB_GROUPS.flatMap(g => g.tabs).find(t => t.id === activeTab)?.icon} {TAB_GROUPS.flatMap(g => g.tabs).find(t => t.id === activeTab)?.label}</h2>
                         <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6b7280' }}>{leads.length} leads · {leads.filter(l => l.status === 'converted').length} converted · Live Sync</p>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#111827', border: '1px solid #1f2d3d', borderRadius: 20, padding: '6px 14px' }}>

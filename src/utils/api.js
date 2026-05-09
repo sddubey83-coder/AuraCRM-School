@@ -3,7 +3,7 @@ import { API_ENDPOINTS } from './constants';
 
 class ApiClient {
     constructor() {
-        this.baseURL = process.env.REACT_APP_API_URL || 'https://aurasync-school-api.vercel.app';
+        this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
         this.token = localStorage.getItem('auth_token');
         this.init();
     }

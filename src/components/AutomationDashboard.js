@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const API = "https://auracrm-school-backend.onrender.com";
+const API = process.env.REACT_APP_API_URL;
 
 const FLOW_COLORS = {
     admission: { bg: "#e8f5ef", text: "#085041", border: "#5dcaa5", dark: "#2d6a4f" },
@@ -67,11 +67,13 @@ export default function AutomationDashboard() {
 
     async function fetchData() {
         try {
-            const logRes = await fetch(`${API}/automation/logs`);
+            const token = localStorage.getItem('aura_token');
+            const headers = { Authorization: `Bearer ${token}` };
+            const logRes = await fetch(`${API}/automation/logs`, { headers });
             const logData = await logRes.json();
             setLogs(logData.logs || []);
-            const tRes = await fetch(`${API}/automation/analytics/teachers`);
-            const pRes = await fetch(`${API}/automation/analytics/parents`);
+            const tRes = await fetch(`${API}/automation/analytics/teachers`, { headers });
+            const pRes = await fetch(`${API}/automation/analytics/parents`, { headers });
             const tData = await tRes.json();
             const pData = await pRes.json();
             setAnalytics({ teachers: tData.teachers || [], insights: pData.insights || [] });

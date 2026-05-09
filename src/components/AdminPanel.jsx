@@ -7,8 +7,7 @@ import { useAuth } from "../RBAC";
 import axios from "axios";
 
 // 🌐 API Base URL
-const API_URL = "http://localhost:5000";
-
+const API_URL = process.env.REACT_APP_API_URL;
 // 📜 ADVANCED CERTIFICATE & LEDGER ENGINE
 const printDocument = (data, type) => {
     const win = window.open("", "_blank");
